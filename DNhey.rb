@@ -2,9 +2,18 @@ require 'minitest/autorun'
 
 def read_fasta_to_array file_name
 	file = File.new(file_name, "r")
-  [0,0]
-end
 
+	file.gets # Skip first line
+
+	codons = []
+  while (line = file.gets)
+    codons.push(line[0,3])
+  end
+
+  file.close
+
+  return codons
+end
 
 describe '.read_fasta_to_array' do
 	describe 'given the filename of a file with 2 codons' do
@@ -16,6 +25,21 @@ describe '.read_fasta_to_array' do
 		end
 		it 'returns an array with 2 elements' do
 			assert_equal 2, @result.size
+		end
+		it 'strips the first line' do
+			refute_equal '>gi', @result[0]
+		end
+		it 'returns the correct first element (TGC)' do
+			assert_equal 'TGC', @result[0]
+		end
+	end
+
+	describe 'given the filename of a file with 5 codons' do
+		before do
+			@result = read_fasta_to_array('test_assets/5codons.fasta')
+		end
+		it 'returns the correct first element (CTG)' do
+			assert_equal 'CTG', @result[0]
 		end
 	end
 
