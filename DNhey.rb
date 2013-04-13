@@ -1,4 +1,4 @@
-require 'minitest/autorun'
+ require 'minitest/autorun'
 
 def read_fasta_to_array file_name
 	file = File.new(file_name, "r")
@@ -26,13 +26,32 @@ def line_to_codons line
 	codons
 end
 
+class SequenceStats
+	def initialize codons
+		@codons = codons
+	end
+	
+	def codon_frequency
+		count_hash = {}
+		@codons.each do |codon|
+			count_hash[codon] = 0 if count_hash[codon].nil?
+			count_hash[codon] = count_hash[codon] + 1
+		end
+		count_hash
+	end
+end
+
+codon_array = read_fasta_to_array('sequence.fasta')
+sequence_stat = SequenceStats.new(codon_array)
+puts sequence_stat.codon_frequency.sort_by{|key, value| key}.reverse
+
 describe '.line_to_codons' do
 	describe 'when given a string containing 3 codons' do
 		before do
 			@result = line_to_codons("CTGCTGATG")
 		end
 		it 'returns an array' do
-			assert_equal(Array, @result.class)
+			assert_instance_of(Array, @result)
 		end
 		it 'returns a array containing 3 elements' do
 			assert_equal 3, @result.size
@@ -60,7 +79,7 @@ describe '.read_fasta_to_array' do
 			@result = read_fasta_to_array('test_assets/2codons.fasta')
 		end
 		it 'returns an array' do
-			assert_equal Array, @result.class
+			assert_instance_of(Array, @result)
 		end
 		it 'returns an array with 2 elements' do
 			assert_equal 2, @result.size
@@ -91,5 +110,25 @@ describe '.read_fasta_to_array' do
       	read_fasta_to_array('fdhjkafdshjksadfkjhadsf')
       end
     end
+	end
+end
+
+describe "SequenceStats" do
+	describe ".codon_frequency" do
+		before do
+			sequence_stats = SequenceStats.new(['TGA', 'TGA', 'FGA'])
+			@result = sequence_stats.codon_frequency
+		end
+		it "returns a hash" do
+			assert_instance_of(Hash, @result)
+		end
+		it "returns the correct key value pairs" do
+			assert_equal({
+				'TGA' => 2,
+				'FGA' => 1
+			}, @result)
+		end
+
+
 	end
 end
